@@ -1,0 +1,7 @@
+import torch
+
+def cliff_sigmod(self,x,t = 0.0,p=0.1):
+	return 1/(1+torch.exp((a-x)/b))
+	
+def CRR(self, p_score, n_score):
+  return (torch.log(torch.sum(self.cliff_sigmod(n_score - p_score,t = 0.0,p=0.1),axis = 1)+1.0)).mean()
