@@ -1,7 +1,18 @@
-import torch
+class CRRLoss(nn.Module):
+    def __init__(self, t =1.0, p = 0.0):
+        super().__init__()
+        self.t = t
+        self.p = p
 
-def cliff_sigmod(self,x,t = 0.0,p=0.1):
-	return 1/(1+torch.exp((p-x)/t))
-	
-def CRR(self, p_score, n_score):
-  return (torch.log(torch.sum(self.cliff_sigmod(n_score - p_score,t = 1.0,p=0.1),axis = 1)+1.0)).mean()
+    def cliff_sigmod(self, x):
+        exponent = (self.p - x) / self.t
+        exponent = torch.clamp(exponent, min=-20, max=20)
+        return 1 / (1 + torch.exp(exponent))
+
+    def forward(self, pos_scores, neg_scores, num_neg):
+
+        pos_scores = pos_scores.view(-1,num_neg)
+        neg_scores = neg_scores.view(-1,num_neg)
+        loss = (torch.log(torch.sum(self.cliff_sigmod(pos_scores - neg_scores),axis = 1)+1.0)).mean()
+
+        return loss
